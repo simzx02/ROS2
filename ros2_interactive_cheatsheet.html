@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive ROS2 Cheat Sheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: #667eea;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .section-header:hover {
+            background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        }
+
+        .section-content {
+            padding: 25px;
+            display: none;
+        }
+
+        .section-content.expanded {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 1000px; }
+        }
+
+        .command-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .command-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .command-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .command-code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            cursor: pointer;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .command-code:hover {
+            background: #4a5568;
+        }
+
+        .command-code::after {
+            content: "📋 Click to copy";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #a0aec0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .command-code:hover::after {
+            opacity: 1;
+        }
+
+        .command-description {
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .concept-card {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .concept-card:hover {
+            transform: scale(1.02);
+        }
+
+        .concept-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .analogy-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .code-title {
+            color: #63b3ed;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            color: #667eea;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .quick-reference {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .ref-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tab {
+                width: 200px;
+                text-align: center;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="copy-notification" id="copyNotification">Command copied to clipboard! 📋</div>
+    
+    <div class="header">
+        <h1>🤖 ROS2 Interactive Cheat Sheet</h1>
+        <p style="margin-bottom: 15px;">Your comprehensive beginner's reference guide</p>
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search commands, concepts, or examples...">
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('concepts')">💡 Core Concepts</button>
+            <button class="tab" onclick="showTab('turtlesim')">🐢 TurtleSim Tutorial</button>
+            <button class="tab" onclick="showTab('commands')">⚡ CLI Commands</button>
+            <button class="tab" onclick="showTab('python')">🐍 Python Code</button>
+            <button class="tab" onclick="showTab('cpp')">⚙️ C++ Code</button>
+            <button class="tab" onclick="showTab('troubleshooting')">🔧 Troubleshooting</button>
+        </div>
+
+        <!-- TurtleSim Tutorial Tab -->
+        <div id="turtlesim" class="tab-content">
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🚀 Getting Started with TurtleSim
+                    <span>▲</span>
+                </div>
+                <div class="section-content expanded">
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h3>🎯 What is TurtleSim?</h3>
+                        <p>TurtleSim is ROS2's "Hello World" - a simple 2D simulator with a cute turtle! Perfect for learning publishers, subscribers, services, and parameters without needing real hardware.</p>
+                    </div>
+                    
+                    <div class="command-grid">
+                        <div class="command-item">
+                            <h4>Step 1: Install TurtleSim</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">sudo apt install ros-humble-turtlesim</div>
+                            <div class="command-description">Install the turtlesim package</div>
+                        </div>
+                        
+                        <div class="command-item">
+                            <h4>Step 2: Launch TurtleSim</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 run turtlesim turtlesim_node</div>
+                            <div class="command-description">🎨 Opens a blue window with a turtle in the center</div>
+                        </div>
+                        
+                        <div class="command-item">
+                            <h4>Step 3: Control the Turtle (New Terminal)</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 run turtlesim turtle_teleop_key</div>
+                            <div class="command-description">🎮 Use arrow keys to move the turtle around!</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #e8f4f8; border: 2px solid #bee3f8; border-radius: 10px; padding: 15px; margin-top: 20px;">
+                        <strong>🎉 Success!</strong> You now have a moving turtle! This demonstrates <span class="highlight">publisher-subscriber</span> communication - the teleop node publishes movement commands, and the turtlesim node subscribes to them.
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🔍 Exploring TurtleSim Topics
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="command-grid">
+                        <div class="command-item">
+                            <h4>See All Topics</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic list</div>
+                            <div class="command-description">Shows: /turtle1/cmd_vel, /turtle1/pose, /turtle1/color_sensor</div>
+                        </div>
+                        
+                        <div class="command-item">
+                            <h4>Watch Turtle Movement Commands</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic echo /turtle1/cmd_vel</div>
+                            <div class="command-description">📡 See velocity commands when you press arrow keys</div>
+                        </div>
+                        
+                        <div class="command-item">
+                            <h4>Watch Turtle Position</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic echo /turtle1/pose</div>
+                            <div class="command-description">📍 See real-time x, y, and angle of the turtle</div>
+                        </div>
+                        
+                        <div class="command-item">
+                            <h4>Control Turtle Manually</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic pub /turtle1/cmd_vel geometry_msgs/msg/Twist "linear: {x: 2.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 1.8}"</div>
+                            <div class="command-description">🌀 Makes turtle move in a circle!</div>
+                        </div>
+                    </div>
+                    
+                    <div class="concept-card" style="margin-top: 20px;">
+                        <div class="concept-title">🧠 What's Happening?</div>
+                        <div class="analogy-box">
+                            <strong>📻 Topic = Radio Station</strong><br>
+                            • <code>/turtle1/cmd_vel</code> = "Movement commands radio station"<br>
+                            • <code>/turtle1/pose</code> = "Position updates radio station"<br>
+                            • Teleop node = Broadcaster sending "move forward" commands<br>
+                            • TurtleSim node = Listener receiving and acting on commands
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    ☎️ TurtleSim Services
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="command-grid">
+                        <div class="command-item">
+                            <h4>See Available Services</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service list</div>
+                            <div class="command-description">Shows services like /spawn, /kill, /reset, /clear</div>
+                        </div>
+                        
+                        <div class="command-item">
+                            <h4>Spawn a New Turtle</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service call /spawn turtlesim/srv/Spawn "{x: 2, y: 2, theta: 0.2, name: 'turtle2'}"</div>
+                            <div class="command-description">🐢➕ Creates a second turtle at position (2,2)</div>
+                        </div>
+                        
+                        <div class="command-item">
+                            <h4>Clear Turtle Trails</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service call /clear std_srvs/srv/Empty</div>
+                            <div class="command-description">🧹 Erases all the colorful trails</div>
+                        </div>
+                        
+                        <div class="command-item">
+                            <h4>Reset Everything</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service call /reset std_srvs/srv/Empty</div>
+                            <div class="command-description">🔄 Resets turtle to center, clears trails</div>
+                        </div>
+                        
+                        <div class="command-item">
+                            <h4>Kill a Turtle</h4>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service call /kill turtlesim/srv/Kill "{name: 'turtle2'}"</div>
+                            <div class="command-description">❌ Removes turtle2 from the simulation</div>
+                        </div>
+                    </div>
+                    
+                    <div class="concept-card" style="margin-top: 20px;">
+                        <div class="concept-title">📞 Services = Phone Calls</div>
+                        <div class="analogy-box">
+                            <strong>You call TurtleSim and ask:</strong><br>
+                            • "Please create a new turtle at (2,2)" → Service responds: "Done! Created turtle2"<br>
+                            • "Please clear the screen" → Service responds: "Done! Screen cleared"<br>
+                            • "Please reset everything" → Service responds: "Done! Back to start"
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🎮 Fun TurtleSim Challenges
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="quick-reference">
+                        <div class="ref-card">
+                            <h3>🌀 Challenge 1: Circle Dance</h3>
+                            <p>Make turtle move in perfect circles</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic pub /turtle1/cmd_vel geometry_msgs/msg/Twist "linear: {x: 2.0}, angular: {z: 2.0}" --rate 1</div>
+                            <p><strong>Goal:</strong> Understand linear vs angular velocity</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>🏁 Challenge 2: Race Track</h3>
+                            <p>Create multiple turtles and control them separately</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service call /spawn turtlesim/srv/Spawn "{x: 1, y: 1, name: 'racer1'}"</div>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic pub /racer1/cmd_vel geometry_msgs/msg/Twist "linear: {x: 3.0}" --rate 1</div>
+                            <p><strong>Goal:</strong> Learn about multiple nodes and namespaces</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>🎨 Challenge 3: Turtle Artist</h3>
+                            <p>Draw shapes and patterns</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic pub /turtle1/cmd_vel geometry_msgs/msg/Twist "linear: {x: 1.0}" --rate 1</div>
+                            <p>Then change direction:</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic pub /turtle1/cmd_vel geometry_msgs/msg/Twist "angular: {z: 1.57}" --rate 1</div>
+                            <p><strong>Goal:</strong> Create squares, triangles, spirals!</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>🔍 Challenge 4: Position Spy</h3>
+                            <p>Monitor turtle position and create alerts</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic echo /turtle1/pose | grep "x:"</div>
+                            <p><strong>Goal:</strong> Learn data filtering and monitoring</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🐍 Python: Control TurtleSim Programmatically
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="code-example">
+                        <div class="code-title">🎮 Turtle Controller Node</div>
+                        <pre onclick="copyToClipboard(this)">#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from turtlesim.msg import Pose
+import math
+
+class TurtleController(Node):
+    def __init__(self):
+        super().__init__('turtle_controller')
+        
+        # Publisher to control turtle movement
+        self.cmd_publisher = self.create_publisher(Twist, '/turtle1/cmd_vel', 10)
+        
+        # Subscriber to get turtle position
+        self.pose_subscriber = self.create_subscription(
+            Pose, '/turtle1/pose', self.pose_callback, 10)
+        
+        # Timer to send commands regularly
+        self.timer = self.create_timer(0.1, self.control_turtle)
+        
+        self.current_pose = None
+        self.target_x = 8.0
+        self.target_y = 8.0
+
+    def pose_callback(self, msg):
+        self.current_pose = msg
+
+    def control_turtle(self):
+        if self.current_pose is None:
+            return
+            
+        # Calculate distance to target
+        distance = math.sqrt(
+            (self.target_x - self.current_pose.x)**2 + 
+            (self.target_y - self.current_pose.y)**2
+        )
+        
+        # Create movement command
+        cmd = Twist()
+        
+        if distance > 0.1:  # If not at target
+            # Calculate angle to target
+            angle_to_target = math.atan2(
+                self.target_y - self.current_pose.y,
+                self.target_x - self.current_pose.x
+            )
+            
+            # Calculate angle difference
+            angle_diff = angle_to_target - self.current_pose.theta
+            
+            # Normalize angle difference to [-pi, pi]
+            while angle_diff > math.pi:
+                angle_diff -= 2 * math.pi
+            while angle_diff < -math.pi:
+                angle_diff += 2 * math.pi
+            
+            # Set movement commands
+            cmd.linear.x = min(2.0, distance)  # Move forward
+            cmd.angular.z = 4.0 * angle_diff   # Turn towards target
+            
+            self.get_logger().info(f'Moving to ({self.target_x}, {self.target_y}), Distance: {distance:.2f}')
+        else:
+            # Reached target, stop
+            cmd.linear.x = 0.0
+            cmd.angular.z = 0.0
+            self.get_logger().info('Target reached!')
+        
+        self.cmd_publisher.publish(cmd)
+
+def main():
+    rclpy.init()
+    controller = TurtleController()
+    
+    try:
+        rclpy.spin(controller)
+    except KeyboardInterrupt:
+        pass
+    
+    controller.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()</pre>
+                    </div>
+                    
+                    <div style="background: #e8f4f8; border: 2px solid #bee3f8; border-radius: 10px; padding: 15px; margin: 15px 0;">
+                        <strong>🎯 How to use:</strong><br>
+                        1. Save as <code>turtle_controller.py</code><br>
+                        2. Run: <code>python3 turtle_controller.py</code><br>
+                        3. Watch turtle automatically move to point (8,8)!
+                    </div>
+                    
+                    <div class="code-example">
+                        <div class="code-title">🌟 Simple Circle Drawer</div>
+                        <pre onclick="copyToClipboard(this)">#!/usr/bin/env python3
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+
+class CircleDrawer(Node):
+    def __init__(self):
+        super().__init__('circle_drawer')
+        self.publisher = self.create_publisher(Twist, '/turtle1/cmd_vel', 10)
+        self.timer = self.create_timer(0.1, self.draw_circle)
+        
+    def draw_circle(self):
+        cmd = Twist()
+        cmd.linear.x = 2.0    # Forward speed
+        cmd.angular.z = 1.0   # Turning speed
+        self.publisher.publish(cmd)
+        self.get_logger().info('Drawing circle...')
+
+def main():
+    rclpy.init()
+    drawer = CircleDrawer()
+    
+    try:
+        rclpy.spin(drawer)
+    except KeyboardInterrupt:
+        pass
+    
+    drawer.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🚨 TurtleSim Troubleshooting
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="quick-reference">
+                        <div class="ref-card">
+                            <h3>🖥️ "No turtlesim window appears"</h3>
+                            <p><strong>Problem:</strong> Window doesn't show up</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">export DISPLAY=:0</div>
+                            <p><strong>Solution:</strong> Set display variable (for WSL users)</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>🐢 "Turtle doesn't move"</h3>
+                            <p><strong>Check 1:</strong> Is teleop running?</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 node list</div>
+                            <p><strong>Check 2:</strong> Focus on teleop terminal window</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>📡 "Topics not working"</h3>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic hz /turtle1/cmd_vel</div>
+                            <p>Should show ~10 Hz when moving turtle</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic info /turtle1/cmd_vel</div>
+                            <p>Check publishers and subscribers</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <h3>🎓 TurtleSim Learning Path</h3>
+                        <ol style="line-height: 1.8;">
+                            <li><strong>Beginner:</strong> Launch turtlesim, move with teleop</li>
+                            <li><strong>Explorer:</strong> Use ros2 topic echo, try manual commands</li>
+                            <li><strong>Intermediate:</strong> Write Python scripts to control turtle</li>
+                            <li><strong>Advanced:</strong> Create multiple turtles, implement following behavior</li>
+                            <li><strong>Expert:</strong> Build turtle formation control, obstacle avoidance</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concepts Tab -->
+        <div id="concepts" class="tab-content active">
+            <div class="concept-card" onclick="toggleConcept(this)">
+                <div class="concept-title">📻 Publisher & Subscriber (Topics)</div>
+                <div class="analogy-box">
+                    <strong>🎵 Like Radio:</strong> Publisher = Radio station broadcasting music, Subscriber = Your radio tuning in
+                    <div class="code-example" style="margin-top: 15px; display: none;">
+                        <div class="code-title">Quick Example:</div>
+                        <div style="color: #f6ad55;">Publisher:</div> Camera node sends images continuously<br>
+                        <div style="color: #68d391;">Topic:</div> /camera/image (the "radio frequency")<br>
+                        <div style="color: #63b3ed;">Subscriber:</div> Display node receives and shows images
+                    </div>
+                </div>
+            </div>
+
+            <div class="concept-card" onclick="toggleConcept(this)">
+                <div class="concept-title">☎️ Services</div>
+                <div class="analogy-box">
+                    <strong>📞 Like Phone Call:</strong> You call, ask a question, wait for specific answer
+                    <div class="code-example" style="margin-top: 15px; display: none;">
+                        <div class="code-title">Quick Example:</div>
+                        <div style="color: #f6ad55;">Request:</div> "Plan path to kitchen"<br>
+                        <div style="color: #68d391;">Response:</div> [coordinates: x1,y1 → x2,y2 → x3,y3]<br>
+                        <div style="color: #63b3ed;">Usage:</div> One-time requests, calculations, commands
+                    </div>
+                </div>
+            </div>
+
+            <div class="concept-card" onclick="toggleConcept(this)">
+                <div class="concept-title">📦 Packages</div>
+                <div class="analogy-box">
+                    <strong>📁 Like Project Folders:</strong> Everything related to one functionality in one place
+                    <div class="code-example" style="margin-top: 15px; display: none;">
+                        <div class="code-title">Package Structure:</div>
+                        my_robot_package/<br>
+                        ├── src/          # Source code<br>
+                        ├── launch/       # Launch files<br>
+                        ├── config/       # Configuration files<br>
+                        └── package.xml   # Package info
+                    </div>
+                </div>
+            </div>
+
+            <div class="concept-card" onclick="toggleConcept(this)">
+                <div class="concept-title">🎮 Nodes</div>
+                <div class="analogy-box">
+                    <strong>⚡ Like Mini Programs:</strong> Each does one job really well
+                    <div class="code-example" style="margin-top: 15px; display: none;">
+                        <div class="code-title">Node Examples:</div>
+                        <div style="color: #f6ad55;">camera_node:</div> Takes pictures<br>
+                        <div style="color: #68d391;">motor_node:</div> Controls wheel movement<br>
+                        <div style="color: #63b3ed;">navigation_node:</div> Plans robot paths<br>
+                        <div style="color: #e91e63;">sensor_node:</div> Reads temperature, distance, etc.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Commands Tab -->
+        <div id="commands" class="tab-content">
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🚀 Getting Started Commands
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="command-grid">
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 run &lt;package_name&gt; &lt;node_name&gt;</div>
+                            <div class="command-description">Run a single node from a package</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 launch &lt;package_name&gt; &lt;launch_file&gt;</div>
+                            <div class="command-description">Launch multiple nodes at once</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 node list</div>
+                            <div class="command-description">See all running nodes</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic list</div>
+                            <div class="command-description">See all active topics</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    📡 Topic Commands (Publisher/Subscriber)
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="command-grid">
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic echo /topic_name</div>
+                            <div class="command-description">Listen to messages on a topic (like tuning into radio)</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic pub /topic_name msg_type "data"</div>
+                            <div class="command-description">Publish a message to a topic manually</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic hz /topic_name</div>
+                            <div class="command-description">Check how fast messages are being sent</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic info /topic_name</div>
+                            <div class="command-description">Get detailed info about a topic</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    ☎️ Service Commands
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="command-grid">
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service list</div>
+                            <div class="command-description">See all available services</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service call /service_name service_type "request"</div>
+                            <div class="command-description">Call a service with specific request</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service type /service_name</div>
+                            <div class="command-description">Check what type of service this is</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    📦 Package Management
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="command-grid">
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 pkg create --build-type ament_python my_package</div>
+                            <div class="command-description">Create a new Python package</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 pkg create --build-type ament_cmake my_package</div>
+                            <div class="command-description">Create a new C++ package</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">colcon build</div>
+                            <div class="command-description">Build all packages in workspace</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">source install/setup.bash</div>
+                            <div class="command-description">Source your workspace after building</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Python Tab -->
+        <div id="python" class="tab-content">
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    📻 Publisher Example (Python)
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="code-example">
+                        <div class="code-title">Simple Publisher Node</div>
+                        <pre onclick="copyToClipboard(this)">import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+class MyPublisher(Node):
+    def __init__(self):
+        super().__init__('my_publisher')
+        self.publisher = self.create_publisher(String, 'chatter', 10)
+        self.timer = self.create_timer(1.0, self.publish_message)
+        self.counter = 0
+
+    def publish_message(self):
+        msg = String()
+        msg.data = f'Hello ROS2! Count: {self.counter}'
+        self.publisher.publish(msg)
+        self.get_logger().info(f'Published: {msg.data}')
+        self.counter += 1
+
+def main():
+    rclpy.init()
+    node = MyPublisher()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    📱 Subscriber Example (Python)
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="code-example">
+                        <div class="code-title">Simple Subscriber Node</div>
+                        <pre onclick="copyToClipboard(this)">import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+class MySubscriber(Node):
+    def __init__(self):
+        super().__init__('my_subscriber')
+        self.subscription = self.create_subscription(
+            String, 'chatter', self.message_callback, 10)
+
+    def message_callback(self, msg):
+        self.get_logger().info(f'Received: {msg.data}')
+
+def main():
+    rclpy.init()
+    node = MySubscriber()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    ☎️ Service Example (Python)
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="code-example">
+                        <div class="code-title">Service Server</div>
+                        <pre onclick="copyToClipboard(this)">import rclpy
+from rclpy.node import Node
+from example_interfaces.srv import AddTwoInts
+
+class MyServiceServer(Node):
+    def __init__(self):
+        super().__init__('add_two_ints_server')
+        self.srv = self.create_service(
+            AddTwoInts, 'add_two_ints', self.add_two_ints_callback)
+
+    def add_two_ints_callback(self, request, response):
+        response.sum = request.a + request.b
+        self.get_logger().info(f'{request.a} + {request.b} = {response.sum}')
+        return response
+
+def main():
+    rclpy.init()
+    node = MyServiceServer()
+    rclpy.spin(node)
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()</pre>
+                    </div>
+                    
+                    <div class="code-example">
+                        <div class="code-title">Service Client</div>
+                        <pre onclick="copyToClipboard(this)">import rclpy
+from rclpy.node import Node
+from example_interfaces.srv import AddTwoInts
+
+class MyServiceClient(Node):
+    def __init__(self):
+        super().__init__('add_two_ints_client')
+        self.client = self.create_client(AddTwoInts, 'add_two_ints')
+        
+        # Wait for service to be available
+        while not self.client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Service not available, waiting...')
+
+    def send_request(self, a, b):
+        request = AddTwoInts.Request()
+        request.a = a
+        request.b = b
+        future = self.client.call_async(request)
+        return future
+
+def main():
+    rclpy.init()
+    node = MyServiceClient()
+    
+    # Call the service
+    future = node.send_request(5, 3)
+    rclpy.spin_until_future_complete(node, future)
+    
+    if future.result() is not None:
+        response = future.result()
+        node.get_logger().info(f'Result: {response.sum}')
+    
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- C++ Tab -->
+        <div id="cpp" class="tab-content">
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    📻 Publisher Example (C++)
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="code-example">
+                        <div class="code-title">Simple Publisher Node</div>
+                        <pre onclick="copyToClipboard(this)">#include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
+
+class MyPublisher : public rclcpp::Node {
+public:
+    MyPublisher() : Node("my_publisher"), counter_(0) {
+        publisher_ = this->create_publisher&lt;std_msgs::msg::String&gt;("chatter", 10);
+        timer_ = this->create_wall_timer(
+            std::chrono::seconds(1),
+            std::bind(&MyPublisher::publish_message, this));
+    }
+
+private:
+    void publish_message() {
+        auto message = std_msgs::msg::String();
+        message.data = "Hello ROS2! Count: " + std::to_string(counter_++);
+        publisher_->publish(message);
+        RCLCPP_INFO(this->get_logger(), "Published: '%s'", message.data.c_str());
+    }
+
+    rclcpp::Publisher&lt;std_msgs::msg::String&gt;::SharedPtr publisher_;
+    rclcpp::TimerBase::SharedPtr timer_;
+    int counter_;
+};
+
+int main(int argc, char** argv) {
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared&lt;MyPublisher&gt;());
+    rclcpp::shutdown();
+    return 0;
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    📱 Subscriber Example (C++)
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="code-example">
+                        <div class="code-title">Simple Subscriber Node</div>
+                        <pre onclick="copyToClipboard(this)">#include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
+
+class MySubscriber : public rclcpp::Node {
+public:
+    MySubscriber() : Node("my_subscriber") {
+        subscription_ = this->create_subscription&lt;std_msgs::msg::String&gt;(
+            "chatter", 10,
+            std::bind(&MySubscriber::message_callback, this, std::placeholders::_1));
+    }
+
+private:
+    void message_callback(const std_msgs::msg::String::SharedPtr msg) {
+        RCLCPP_INFO(this->get_logger(), "Received: '%s'", msg->data.c_str());
+    }
+
+    rclcpp::Subscription&lt;std_msgs::msg::String&gt;::SharedPtr subscription_;
+};
+
+int main(int argc, char** argv) {
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared&lt;MySubscriber&gt;());
+    rclcpp::shutdown();
+    return 0;
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting Tab -->
+        <div id="troubleshooting" class="tab-content">
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🚨 Common Problems & Solutions
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="quick-reference">
+                        <div class="ref-card">
+                            <h3>❌ "Package not found"</h3>
+                            <p><strong>Problem:</strong> ROS2 can't find your package</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">source install/setup.bash</div>
+                            <p><strong>Solution:</strong> Source your workspace after building</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>🔇 "No messages on topic"</h3>
+                            <p><strong>Problem:</strong> Topic exists but no data</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic info /topic_name</div>
+                            <p><strong>Solution:</strong> Check if publisher is running</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>📦 "Build failed"</h3>
+                            <p><strong>Problem:</strong> Package won't compile</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">colcon build --packages-select my_package</div>
+                            <p><strong>Solution:</strong> Build specific package to see detailed errors</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>🔌 "Service not available"</h3>
+                            <p><strong>Problem:</strong> Can't call service</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 service list</div>
+                            <p><strong>Solution:</strong> Check if service server is running</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🔍 Debugging Commands
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="command-grid">
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 node info /node_name</div>
+                            <div class="command-description">Get detailed info about a specific node</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 topic echo /rosout</div>
+                            <div class="command-description">See all log messages from all nodes</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 doctor</div>
+                            <div class="command-description">Check your ROS2 system health</div>
+                        </div>
+                        <div class="command-item">
+                            <div class="command-code" onclick="copyToClipboard(this)">rqt_graph</div>
+                            <div class="command-description">Visualize node connections (install: sudo apt install ros-humble-rqt-graph)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    ⚡ Quick Fixes
+                    <span>▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="quick-reference">
+                        <div class="ref-card">
+                            <h3>🔄 Environment Issues</h3>
+                            <div class="command-code" onclick="copyToClipboard(this)">echo $ROS_DOMAIN_ID</div>
+                            <p>Check if ROS domain is set (should be same for all nodes)</p>
+                            <div class="command-code" onclick="copyToClipboard(this)">export ROS_DOMAIN_ID=0</div>
+                            <p>Set domain ID if needed</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>🗑️ Clean Build</h3>
+                            <div class="command-code" onclick="copyToClipboard(this)">rm -rf build install log</div>
+                            <div class="command-code" onclick="copyToClipboard(this)">colcon build</div>
+                            <p>Clean build when things get weird</p>
+                        </div>
+                        
+                        <div class="ref-card">
+                            <h3>📡 Network Issues</h3>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 multicast receive</div>
+                            <div class="command-code" onclick="copyToClipboard(this)">ros2 multicast send</div>
+                            <p>Test multicast communication (run in separate terminals)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Section toggle
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('span');
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                arrow.textContent = '▼';
+            } else {
+                content.classList.add('expanded');
+                arrow.textContent = '▲';
+            }
+        }
+
+        // Concept card toggle
+        function toggleConcept(card) {
+            const codeExample = card.querySelector('.code-example');
+            if (codeExample.style.display === 'none' || !codeExample.style.display) {
+                codeExample.style.display = 'block';
+            } else {
+                codeExample.style.display = 'none';
+            }
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(element) {
+            const text = element.textContent || element.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showCopyNotification();
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function showCopyNotification() {
+            const notification = document.getElementById('copyNotification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }
+
+        // Search functionality
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const allContent = document.querySelectorAll('.command-item, .concept-card, .ref-card');
+            
+            allContent.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm) || searchTerm === '') {
+                    item.style.display = 'block';
+                    // Auto-expand parent section if hidden
+                    const section = item.closest('.section-content');
+                    if (section && !section.classList.contains('expanded')) {
+                        section.classList.add('expanded');
+                        const arrow = section.previousElementSibling.querySelector('span');
+                        if (arrow) arrow.textContent = '▲';
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Auto-expand first section of each tab
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstSections = document.querySelectorAll('.tab-content.active .section:first-child .section-content');
+            firstSections.forEach(section => {
+                section.classList.add('expanded');
+                const arrow = section.previousElementSibling.querySelector('span');
+                if (arrow) arrow.textContent = '▲';
+            });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+F or Cmd+F to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                document.getElementById('searchBox').focus();
+            }
+        });
+    </script>
+</body>
+</html>

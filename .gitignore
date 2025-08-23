@@ -1,0 +1,6 @@
+# Ignore everything in logs/ directory
+log/
+install/
+build/
+.vscode/
+*.db
